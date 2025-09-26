@@ -1,0 +1,15 @@
+.app-container {
+  display: flex;
+  gap: 30px;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+}
