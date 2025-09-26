@@ -24,13 +24,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '23.10'
+          node-version: '23.10.0'
           cache: 'npm'
       - name: Clean up Git configuration
         run: |
-          git config --global --unset-all http.https://github.com/.extraheader || true
-          git config --system --unset-all http.https://github.com/.extraheader || true
-          git config --local --unset-all http.https://github.com/.extraheader || true
+          git config --global user.name "yerald231ger"
+          git config --global user.email "yerald231ger@live.com"
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
