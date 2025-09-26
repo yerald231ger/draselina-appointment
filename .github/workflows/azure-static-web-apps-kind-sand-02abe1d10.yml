@@ -15,10 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+      - name: Clean up Git configuration
+        run: |
+          git config --global --unset-all http.https://github.com/.extraheader || true
+          git config --system --unset-all http.https://github.com/.extraheader || true
+          git config --local --unset-all http.https://github.com/.extraheader || true
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
