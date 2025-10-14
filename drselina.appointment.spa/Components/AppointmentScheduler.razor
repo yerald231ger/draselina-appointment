@@ -1,0 +1,171 @@
+@page "/schedule"
+
+<div class="py-4">
+    <h1 class="mb-4 fs-2 fw-bold">Schedule Appointment</h1>
+
+    <div class="row g-4">
+        <!-- Calendar Section -->
+        <div class="col-12 col-lg-4">
+            <div class="card border shadow-sm">
+                <div class="card-body">
+                    <!-- Month Navigation -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <button class="btn btn-sm btn-light rounded-circle p-2" @onclick="PreviousMonth">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                        </button>
+                        <p class="mb-0 fw-bold">@CurrentMonth.ToString("MMMM yyyy")</p>
+                        <button class="btn btn-sm btn-light rounded-circle p-2" @onclick="NextMonth">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div class="calendar-grid">
+                        <!-- Day Headers -->
+                        <div class="calendar-day-header">S</div>
+                        <div class="calendar-day-header">M</div>
+                        <div class="calendar-day-header">T</div>
+                        <div class="calendar-day-header">W</div>
+                        <div class="calendar-day-header">T</div>
+                        <div class="calendar-day-header">F</div>
+                        <div class="calendar-day-header">S</div>
+
+                        <!-- Calendar Days -->
+                        @foreach (var day in GetCalendarDays())
+                        {
+                            <button class="calendar-day @(day.IsSelected ? "selected" : "") @(day.IsDisabled ? "disabled" : "")"
+                                    @onclick="() => SelectDate(day.Date)"
+                                    disabled="@day.IsDisabled">
+                                @day.Day
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Slots and Form Section -->
+        <div class="col-12 col-lg-8">
+            <div class="card border shadow-sm">
+                <div class="card-body">
+                    <h3 class="h5 fw-bold mb-3">Select Time</h3>
+
+                    <!-- Time Slots -->
+                    <div class="time-slots-grid mb-4">
+                        @foreach (var time in AvailableTimes)
+                        {
+                            <button class="btn @(time == SelectedTime ? "btn-primary" : "btn-outline-secondary") rounded-pill"
+                                    @onclick="() => SelectTime(time)">
+                                @time
+                            </button>
+                        }
+                    </div>
+
+                    <!-- Appointment Form -->
+                    <div class="appointment-form">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label text-secondary small fw-medium">First Name</label>
+                                <input type="text" class="form-control" id="firstName" @bind="FirstName" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label text-secondary small fw-medium">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" @bind="LastName" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label text-secondary small fw-medium">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" @bind="PhoneNumber" />
+                        </div>
+                        <button class="btn btn-primary w-100 py-2 fw-bold" @onclick="ConfirmAppointment">
+                            Confirm Appointment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DateTime CurrentMonth { get; set; } = DateTime.Today;
+    private DateTime? SelectedDate { get; set; }
+    private string? SelectedTime { get; set; }
+    private string FirstName { get; set; } = string.Empty;
+    private string LastName { get; set; } = string.Empty;
+    private string PhoneNumber { get; set; } = string.Empty;
+
+    private List<string> AvailableTimes { get; set; } = new()
+    {
+        "09:00 AM", "10:00 AM", "11:00 AM", "01:00 PM",
+        "02:00 PM", "03:00 PM", "04:00 PM"
+    };
+
+    private class CalendarDay
+    {
+        public int Day { get; set; }
+        public DateTime Date { get; set; }
+        public bool IsSelected { get; set; }
+        public bool IsDisabled { get; set; }
+    }
+
+    private void PreviousMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(1);
+    }
+
+    private void SelectDate(DateTime date)
+    {
+        if (date < DateTime.Today) return;
+        SelectedDate = date;
+    }
+
+    private void SelectTime(string time)
+    {
+        SelectedTime = time;
+    }
+
+    private List<CalendarDay> GetCalendarDays()
+    {
+        var days = new List<CalendarDay>();
+        var firstDayOfMonth = new DateTime(CurrentMonth.Year, CurrentMonth.Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+        var startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+
+        // Add empty days for alignment
+        for (int i = 0; i < startDayOfWeek; i++)
+        {
+            days.Add(new CalendarDay { Day = 0, IsDisabled = true });
+        }
+
+        // Add actual days
+        for (int day = 1; day <= lastDayOfMonth.Day; day++)
+        {
+            var date = new DateTime(CurrentMonth.Year, CurrentMonth.Month, day);
+            days.Add(new CalendarDay
+            {
+                Day = day,
+                Date = date,
+                IsSelected = SelectedDate?.Date == date.Date,
+                IsDisabled = date < DateTime.Today
+            });
+        }
+
+        return days;
+    }
+
+    private void ConfirmAppointment()
+    {
+        // TODO: Call API to create appointment
+        Console.WriteLine($"Appointment for {FirstName} {LastName} on {SelectedDate?.ToShortDateString()} at {SelectedTime}");
+    }
+}
