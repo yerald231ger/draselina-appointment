@@ -1,0 +1,26 @@
+<div class="time-slots-grid mb-4">
+    @foreach (var time in AvailableTimes)
+    {
+        <button class="btn @(time == SelectedTime ? "btn-primary" : "btn-outline-secondary") rounded-pill"
+                @onclick="() => OnTimeSelected(time)">
+            @time
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<string> AvailableTimes { get; set; } = new();
+
+    [Parameter]
+    public string? SelectedTime { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SelectedTimeChanged { get; set; }
+
+    private async Task OnTimeSelected(string time)
+    {
+        SelectedTime = time;
+        await SelectedTimeChanged.InvokeAsync(time);
+    }
+}

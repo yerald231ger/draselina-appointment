@@ -1,0 +1,47 @@
+<div class="appointment-form">
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label for="firstName" class="form-label text-secondary small fw-medium">First Name</label>
+            <input type="text" class="form-control" id="firstName" @bind="FirstName" />
+        </div>
+        <div class="col-md-6">
+            <label for="lastName" class="form-label text-secondary small fw-medium">Last Name</label>
+            <input type="text" class="form-control" id="lastName" @bind="LastName" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="phone" class="form-label text-secondary small fw-medium">Phone Number</label>
+        <input type="tel" class="form-control" id="phone" @bind="PhoneNumber" />
+    </div>
+    <button class="btn btn-primary w-100 py-2 fw-bold" @onclick="OnConfirmAppointment">
+        Confirm Appointment
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> FirstNameChanged { get; set; }
+
+    [Parameter]
+    public string LastName { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> LastNameChanged { get; set; }
+
+    [Parameter]
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> PhoneNumberChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+
+    private async Task OnConfirmAppointment()
+    {
+        await OnConfirm.InvokeAsync();
+    }
+}

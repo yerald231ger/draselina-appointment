@@ -1,0 +1,104 @@
+<div class="card border shadow-sm">
+    <div class="card-body">
+        <!-- Month Navigation -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <button class="btn btn-sm btn-light rounded-circle p-2" @onclick="PreviousMonth">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                </svg>
+            </button>
+            <p class="mb-0 fw-bold">@CurrentMonth.ToString("MMMM yyyy")</p>
+            <button class="btn btn-sm btn-light rounded-circle p-2" @onclick="NextMonth">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="calendar-grid">
+            <!-- Day Headers -->
+            <div class="calendar-day-header">S</div>
+            <div class="calendar-day-header">M</div>
+            <div class="calendar-day-header">T</div>
+            <div class="calendar-day-header">W</div>
+            <div class="calendar-day-header">T</div>
+            <div class="calendar-day-header">F</div>
+            <div class="calendar-day-header">S</div>
+
+            <!-- Calendar Days -->
+            @foreach (var day in GetCalendarDays())
+            {
+                <button class="calendar-day @(day.IsSelected ? "selected" : "") @(day.IsDisabled ? "disabled" : "")"
+                        @onclick="() => SelectDate(day.Date)"
+                        disabled="@day.IsDisabled">
+                    @day.Day
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public DateTime? SelectedDate { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> SelectedDateChanged { get; set; }
+
+    private DateTime CurrentMonth { get; set; } = DateTime.Today;
+
+    private class CalendarDay
+    {
+        public int Day { get; set; }
+        public DateTime Date { get; set; }
+        public bool IsSelected { get; set; }
+        public bool IsDisabled { get; set; }
+    }
+
+    private void PreviousMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(1);
+    }
+
+    private async Task SelectDate(DateTime date)
+    {
+        if (date < DateTime.Today) return;
+        SelectedDate = date;
+        await SelectedDateChanged.InvokeAsync(date);
+    }
+
+    private List<CalendarDay> GetCalendarDays()
+    {
+        var days = new List<CalendarDay>();
+        var firstDayOfMonth = new DateTime(CurrentMonth.Year, CurrentMonth.Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+        var startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+
+        // Add empty days for alignment
+        for (int i = 0; i < startDayOfWeek; i++)
+        {
+            days.Add(new CalendarDay { Day = 0, IsDisabled = true });
+        }
+
+        // Add actual days
+        for (int day = 1; day <= lastDayOfMonth.Day; day++)
+        {
+            var date = new DateTime(CurrentMonth.Year, CurrentMonth.Month, day);
+            days.Add(new CalendarDay
+            {
+                Day = day,
+                Date = date,
+                IsSelected = SelectedDate?.Date == date.Date,
+                IsDisabled = date < DateTime.Today
+            });
+        }
+
+        return days;
+    }
+}
